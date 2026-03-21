@@ -64,7 +64,7 @@ export default function InformacionModule({
       case 'directores':
         return ['Nombres', 'Estado'];
       case 'productoras':
-        return ['Nombre', 'Estado', 'Fecha Creación', 'Slogan'];
+        return ['Nombre', 'Estado', 'Fecha Creación', 'Eslogan'];
       case 'tipos':
         return ['Nombre', 'Descripción'];
       case 'medias':

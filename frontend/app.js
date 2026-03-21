@@ -682,7 +682,7 @@ function formatInfoRows(type, data) {
     case 'directores':
       return data.map((d) => `Director: ${d.nombres} | Estado: ${d.estado || '-'}`);
     case 'productoras':
-      return data.map((p) => `Productora: ${p.nombre} | Estado: ${p.estado || '-'} | Slogan: ${p.slogan || '-'}`);
+      return data.map((p) => `Productora: ${p.nombre} | Estado: ${p.estado || '-'} | Eslogan: ${p.slogan || '-'}`);
     case 'tipos':
       return data.map((t) => `Tipo: ${t.nombre} | Descripción: ${t.descripcion || '-'}`);
     case 'medias':

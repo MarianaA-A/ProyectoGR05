@@ -69,7 +69,7 @@ export default function ProductoraModule({ onDataChange }) {
         />
         <input
           type="text"
-          placeholder="Slogan"
+          placeholder="Eslogan"
           value={form.slogan}
           onChange={(e) => updateField('slogan', e.target.value)}
         />
