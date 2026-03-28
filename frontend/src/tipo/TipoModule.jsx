@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ModuleCard from '../shared/components/ModuleCard';
 import { tipoApi } from '../shared/services/api';
 
@@ -7,17 +7,58 @@ const initialState = {
   descripcion: ''
 };
 
-export default function TipoModule({ onDataChange }) {
+const normalizeText = (value) => String(value || '').trim().toLowerCase();
+
+export default function TipoModule({ tipos = [], onDataChange }) {
   const [form, setForm] = useState(initialState);
   const [message, setMessage] = useState('');
 
   const updateField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
+  useEffect(() => {
+    const typedName = normalizeText(form.nombre);
+    if (!typedName) {
+      setForm((prev) => ({ ...prev, descripcion: '' }));
+      return;
+    }
+
+    const found = tipos.find((item) => normalizeText(item.nombre) === typedName);
+    if (!found) {
+      setForm((prev) => ({ ...prev, descripcion: '' }));
+      return;
+    }
+
+    setForm((prev) => {
+      const next = {
+        ...prev,
+        nombre: found.nombre || '',
+        descripcion: found.descripcion || ''
+      };
+
+      if (prev.nombre === next.nombre && prev.descripcion === next.descripcion) {
+        return prev;
+      }
+
+      return next;
+    });
+
+    setMessage('Tipo encontrado: formulario completado automáticamente.');
+  }, [form.nombre, tipos]);
+
   const clearMessage = () => setMessage('');
+
+  const validateRequiredFields = () => {
+    if (!form.nombre.trim() || !form.descripcion.trim()) {
+      setMessage('Completa los datos obligatorios para continuar.');
+      return false;
+    }
+    return true;
+  };
 
   const handleCreate = async (e) => {
     e.preventDefault();
     clearMessage();
+    if (!validateRequiredFields()) return;
     try {
       await tipoApi.create(form);
       setMessage('Tipo creado correctamente');
@@ -30,6 +71,7 @@ export default function TipoModule({ onDataChange }) {
 
   const handleUpdate = async () => {
     clearMessage();
+    if (!validateRequiredFields()) return;
     try {
       await tipoApi.updateByNombre(form.nombre, { descripcion: form.descripcion });
       setMessage('Tipo actualizado correctamente');
@@ -66,6 +108,7 @@ export default function TipoModule({ onDataChange }) {
           placeholder="Descripción"
           value={form.descripcion}
           onChange={(e) => updateField('descripcion', e.target.value)}
+          required
         />
         <div className="actions">
           <button className="btn primary" type="submit">Crear</button>

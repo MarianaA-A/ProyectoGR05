@@ -1,5 +1,7 @@
 # Ignorar dependencias
 node_modules/
+# Ignorar build de frontend
+frontend/dist/
 # Ignorar variables de entorno (Seguridad)
 .env
 # Ignorar archivos del sistema

@@ -7,8 +7,26 @@ const { getDbConnection } = require('./db/db-connection-mongo');
 const app = express();
 const port = process.env.PORT || 4000;
 
-app.use(cors());
+const allowedOrigins = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Origen no permitido por CORS'));
+  }
+}));
+
 app.use(express.json());
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 
 // Rutas
 app.use('/api/generos', require('./routes/genero'));

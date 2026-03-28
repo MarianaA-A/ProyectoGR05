@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ModuleCard from '../shared/components/ModuleCard';
 import { productoraApi } from '../shared/services/api';
 
@@ -9,17 +9,65 @@ const initialState = {
   estado: 'Activo'
 };
 
-export default function ProductoraModule({ onDataChange }) {
+const normalizeText = (value) => String(value || '').trim().toLowerCase();
+
+export default function ProductoraModule({ productoras = [], onDataChange }) {
   const [form, setForm] = useState(initialState);
   const [message, setMessage] = useState('');
 
   const updateField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
+  useEffect(() => {
+    const typedName = normalizeText(form.nombre);
+    if (!typedName) {
+      setForm((prev) => ({ ...prev, slogan: '', descripcion: '', estado: 'Activo' }));
+      return;
+    }
+
+    const found = productoras.find((item) => normalizeText(item.nombre) === typedName);
+    if (!found) {
+      setForm((prev) => ({ ...prev, slogan: '', descripcion: '', estado: 'Activo' }));
+      return;
+    }
+
+    setForm((prev) => {
+      const next = {
+        ...prev,
+        nombre: found.nombre || '',
+        slogan: found.slogan || '',
+        descripcion: found.descripcion || '',
+        estado: found.estado || 'Activo'
+      };
+
+      if (
+        prev.nombre === next.nombre
+        && prev.slogan === next.slogan
+        && prev.descripcion === next.descripcion
+        && prev.estado === next.estado
+      ) {
+        return prev;
+      }
+
+      return next;
+    });
+
+    setMessage('Productora encontrada: formulario completado automáticamente.');
+  }, [form.nombre, productoras]);
+
   const clearMessage = () => setMessage('');
+
+  const validateRequiredFields = () => {
+    if (!form.nombre.trim() || !form.slogan.trim() || !form.descripcion.trim()) {
+      setMessage('Completa los datos obligatorios para continuar.');
+      return false;
+    }
+    return true;
+  };
 
   const handleCreate = async (e) => {
     e.preventDefault();
     clearMessage();
+    if (!validateRequiredFields()) return;
     try {
       await productoraApi.create(form);
       setMessage('Productora creada correctamente');
@@ -32,6 +80,7 @@ export default function ProductoraModule({ onDataChange }) {
 
   const handleUpdate = async () => {
     clearMessage();
+    if (!validateRequiredFields()) return;
     try {
       await productoraApi.updateByNombre(form.nombre, {
         slogan: form.slogan,
@@ -72,12 +121,14 @@ export default function ProductoraModule({ onDataChange }) {
           placeholder="Eslogan"
           value={form.slogan}
           onChange={(e) => updateField('slogan', e.target.value)}
+          required
         />
         <input
           type="text"
           placeholder="Descripción"
           value={form.descripcion}
           onChange={(e) => updateField('descripcion', e.target.value)}
+          required
         />
         <select value={form.estado} onChange={(e) => updateField('estado', e.target.value)}>
           <option value="Activo">Activo</option>
